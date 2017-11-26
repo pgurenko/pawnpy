@@ -1,4 +1,4 @@
-# PyPawn
+# PawnPy
 
 Python wrapper for [pawn](https://github.com/compuphase/pawn) virtual machine.
 
