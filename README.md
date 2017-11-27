@@ -9,10 +9,10 @@ For example:
 ```python
 import pawnpy
 
-src = pawnpy.Source('hello.p')
+src = pawnpy.Source(filename='./hello.p')
 src.set_breakpoint(line=3)
 
-amx = src.compile(output='hello.amx')
+amx = src.compile(output='./hello.amx')
 amx.some_func()
 ```
 
