@@ -7,10 +7,12 @@ The goal is to build, run and debug pawn scripts within easily-to-use environmen
 For example:
 
 ```python
-import pawn
+import pawnpy
 
-pawn.compile('hello.p', 'hello.amx')
-pawn.AMX amx = pawn.load('hello.amx')
+src = pawnpy.Source('hello.p')
+src.set_breakpoint(line=3)
+
+amx = src.compile(output='hello.amx')
 amx.some_func()
 ```
 
