@@ -1,0 +1,3 @@
+[submodule "pawnpy/src/pawn"]
+	path = pawnpy/src/pawn
+	url = https://github.com/pgurenko/pawn

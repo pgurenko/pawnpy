@@ -2,20 +2,87 @@ cmake_minimum_required(VERSION 3.1)
 
 project(pawnpy)
 
-#set(Boost_USE_STATIC_LIBS        ON) # only find static libs
-#set(Boost_USE_MULTITHREADED      ON)
-#set(Boost_USE_STATIC_RUNTIME    OFF)
-
-if(APPLE)
-    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
-    set(CMAKE_SHARED_LIBRARY_PREFIX "")
-endif(APPLE)
+set(Boost_USE_STATIC_LIBS        ON)
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
 
 find_package(Boost 1.58.0 COMPONENTS system python3)
 find_package(PythonLibs)
 
-include_directories(${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+include_directories(
+  ${Boost_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIRS}
+  src/pawn/linux
+)
 
-add_library(${PROJECT_NAME} SHARED "src/main.cpp")
+# check for optional include files
+INCLUDE(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
+CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTD_H)
+IF(HAVE_UNISTD_H)
+  ADD_DEFINITIONS(-DHAVE_UNISTD_H)
+ENDIF(HAVE_UNISTD_H)
+CHECK_INCLUDE_FILE("inttypes.h" HAVE_INTTYPES_H)
+IF(HAVE_INTTYPES_H)
+  ADD_DEFINITIONS(-DHAVE_INTTYPES_H)
+ENDIF(HAVE_INTTYPES_H)
+CHECK_INCLUDE_FILE("stdint.h" HAVE_STDINT_H)
+IF(HAVE_STDINT_H)
+  ADD_DEFINITIONS(-DHAVE_STDINT_H)
+ENDIF(HAVE_STDINT_H)
+CHECK_INCLUDE_FILE("alloca.h" HAVE_ALLOCA_H)
+IF(HAVE_ALLOCA_H)
+  ADD_DEFINITIONS(-DHAVE_ALLOCA_H)
+ENDIF(HAVE_ALLOCA_H)
+
+IF(UNIX)
+  ADD_DEFINITIONS(-DENABLE_BINRELOC -D_GNU_SOURCE)
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../linux)
+  LINK_LIBRARIES(pthread m) #CMake adds the "lib" prefix, so "pthread" becomes "libpthread"
+ENDIF(UNIX)
+IF(WIN32)
+  ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
+ENDIF(WIN32)
+IF(APPLE)
+  # OS X defaults to 64-bit build, but 64-bit issues prevent that being a good idea
+  SET(CMAKE_OSX_ARCHITECTURES "i386")
+ENDIF(APPLE)
+
+set(PAWN ${CMAKE_CURRENT_SOURCE_DIR}/src/pawn)
+set(PAWNCC ${PAWN}/compiler)
+set(PAWNAMX ${PAWN}/amx)
+
+set(PAWNCC_SRCS
+  ${PAWNCC}/sc1.c
+  ${PAWNCC}/sc2.c
+  ${PAWNCC}/sc3.c
+  ${PAWNCC}/sc4.c
+  ${PAWNCC}/sc5.c
+  ${PAWNCC}/sc6.c
+  ${PAWNCC}/sc7.c
+  ${PAWNCC}/scexpand.c
+  ${PAWNCC}/sci18n.c
+  ${PAWNCC}/sclist.c
+  ${PAWNCC}/scmemfil.c
+  ${PAWNCC}/scstate.c
+  ${PAWNCC}/scvars.c
+  ${PAWNCC}/lstring.c
+  ${PAWNCC}/memfile.c
+  ${PAWNAMX}/keeloq.c)
+if(WIN32)
+  set(PAWNCC_SRCS ${PAWNCC_SRCS} pawncc.rc)
+ENDIF(WIN32)
+IF(UNIX)
+  SET(PAWNCC_SRCS ${PAWNCC_SRCS} ${PAWN}/linux/binreloc.c)
+ENDIF(UNIX)
+
+if(APPLE)
+    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+    set(CMAKE_SHARED_LIBRARY_PREFIX "")
+    add_definitions(-DHAVE_SAFESTR)
+endif(APPLE)
+
+add_library(${PROJECT_NAME} SHARED
+  ${PAWNCC_SRCS}
+  src/main.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
