@@ -1,0 +1,14 @@
+language: cpp
+
+os:
+  - osx
+
+compiler:
+  - gcc
+
+before_install:
+  - brew update
+  - brew install cmake python3 boost-python --with-python3
+
+script:
+  - mkdir build && cmake ../ && make
