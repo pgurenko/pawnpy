@@ -51,9 +51,8 @@ private:
 };
 //-----------------------------------------------------------------------------
 
-int cc()
-{
-  cout << __FUNCTION__ << endl;
+int cc(string input, string output) {
+  cout << __FUNCTION__ << " " << input << " " << output << endl;
   // filling proper argc and argv based on parameters
   return pawn::pc_compile(0, NULL);
 }
