@@ -11,11 +11,9 @@ For example:
 ```python
 import pawnpy
 
-src = pawnpy.Source(filename='./hello.p')
-src.set_breakpoint(line=3)
-
-amx = src.compile(output='./hello.amx')
-amx.some_func()
+pawnpy.cc('./hello.p', './hello.amx')
+amx = pawnpy.AMX('./hello.amx')
+amx.main()
 ```
 
 The wrapper itself is the C++ extension for Python using boost python to interface Python and pawn library to interface pawn.

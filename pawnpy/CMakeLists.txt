@@ -6,15 +6,6 @@ set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
-find_package(Boost 1.58.0 COMPONENTS system python3)
-find_package(PythonLibs)
-
-include_directories(
-  ${Boost_INCLUDE_DIRS}
-  ${PYTHON_INCLUDE_DIRS}
-  src/pawn/linux
-)
-
 # check for optional include files
 INCLUDE(${CMAKE_ROOT}/Modules/CheckIncludeFile.cmake)
 CHECK_INCLUDE_FILE("unistd.h" HAVE_UNISTD_H)
@@ -44,7 +35,10 @@ IF(WIN32)
 ENDIF(WIN32)
 IF(APPLE)
   # OS X defaults to 64-bit build, but 64-bit issues prevent that being a good idea
-  SET(CMAKE_OSX_ARCHITECTURES "i386")
+  #set(CMAKE_OSX_ARCHITECTURES "i386")
+  set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+  set(CMAKE_SHARED_LIBRARY_PREFIX "")
+  add_definitions(-DHAVE_SAFESTR)
 ENDIF(APPLE)
 
 set(PAWN ${CMAKE_CURRENT_SOURCE_DIR}/src/pawn)
@@ -75,11 +69,14 @@ IF(UNIX)
   SET(PAWNCC_SRCS ${PAWNCC_SRCS} ${PAWN}/linux/binreloc.c)
 ENDIF(UNIX)
 
-if(APPLE)
-    set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
-    set(CMAKE_SHARED_LIBRARY_PREFIX "")
-    add_definitions(-DHAVE_SAFESTR)
-endif(APPLE)
+find_package(Boost 1.58.0 COMPONENTS system python3)
+find_package(PythonLibs)
+
+include_directories(
+  ${Boost_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIRS}
+  src/pawn/linux
+)
 
 add_library(${PROJECT_NAME} SHARED
   ${PAWNCC_SRCS}

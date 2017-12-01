@@ -11,6 +11,7 @@ before_install:
   - brew install python3 boost-python --with-python3
 
 script:
+  - cd pawnpy
   - mkdir build
   - cd build
   - cmake ../
