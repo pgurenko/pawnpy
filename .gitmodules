@@ -1,3 +1,6 @@
 [submodule "pawnpy/src/pawn"]
 	path = pawnpy/src/pawn
 	url = https://github.com/pgurenko/pawn
+[submodule "tests/pawnpyTest/src/gtest"]
+	path = tests/pawnpyTest/src/gtest
+	url = https://github.com/google/googletest

@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <boost/python.hpp>
 //-----------------------------------------------------------------------------
 namespace pawn {
@@ -51,10 +52,23 @@ private:
 };
 //-----------------------------------------------------------------------------
 
-int cc(string input, string output) {
+void cc(string input, string output = "") {
   cout << __FUNCTION__ << " " << input << " " << output << endl;
-  // filling proper argc and argv based on parameters
-  return pawn::pc_compile(0, NULL);
+
+  vector<string> args;
+  args.push_back(input);
+
+  if(!output.empty()) {
+    stringstream ss;
+    ss << "-o " << output;
+    args.push_back(ss.str());
+  }
+
+  vector<char*> argv;
+  for(auto s: args) {
+    argv.push_back(const_cast<char*>(s.c_str()));
+  }
+  //pawn::pc_compile(argv.size(), argv.data());
 }
 //-----------------------------------------------------------------------------
 
@@ -66,7 +80,7 @@ void translator(exception const& e) {
 BOOST_PYTHON_MODULE(pawnpy) {
   register_exception_translator<exception>(translator);
 
-  def("cc", cc);
+  def("cc", cc, (boost::python::arg("input"), boost::python::arg("output") = ""));
 
   class_<AMX>("AMX", init<std::string>())
       .def_readonly("size", &AMX::size)
