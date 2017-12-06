@@ -12,12 +12,14 @@ set(GTEST_DIR src/gtest/googletest)
 include_directories(
   ${GTEST_DIR}
   ${GTEST_DIR}/include
+  ${PAWNPY}/src
 )
 
 add_executable(${PROJECT_NAME}
   ${PAWNCC_SRCS}
   ${GTEST_DIR}/src/gtest-all.cc
   ${GTEST_DIR}/src/gtest_main.cc
+  ${PAWNPY}/src/compiler.cpp
   src/pawnpyTest.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})

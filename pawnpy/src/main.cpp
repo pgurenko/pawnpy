@@ -1,15 +1,10 @@
 //-----------------------------------------------------------------------------
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <boost/python.hpp>
+#include "compiler.h"
 //-----------------------------------------------------------------------------
 namespace pawn {
-#include "pawn/compiler/sc.h"
 #include "pawn/amx/amx.h"
 }
 //-----------------------------------------------------------------------------
-using namespace std;
 using namespace boost::python;
 //-----------------------------------------------------------------------------
 
@@ -50,26 +45,6 @@ private:
 
   pawn::AMX_HEADER* _hdr;
 };
-//-----------------------------------------------------------------------------
-
-void cc(string input, string output = "") {
-  cout << __FUNCTION__ << " " << input << " " << output << endl;
-
-  vector<string> args;
-  args.push_back(input);
-
-  if(!output.empty()) {
-    stringstream ss;
-    ss << "-o " << output;
-    args.push_back(ss.str());
-  }
-
-  vector<char*> argv;
-  for(auto s: args) {
-    argv.push_back(const_cast<char*>(s.c_str()));
-  }
-  //pawn::pc_compile(argv.size(), argv.data());
-}
 //-----------------------------------------------------------------------------
 
 void translator(exception const& e) {

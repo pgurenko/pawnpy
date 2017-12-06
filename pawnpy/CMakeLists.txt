@@ -8,6 +8,6 @@ include(cmake.base.txt)
 
 add_library(${PROJECT_NAME} SHARED
   ${PAWNCC_SRCS}
-  src/main.cpp)
+  src/main src/compiler)
 
 target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
