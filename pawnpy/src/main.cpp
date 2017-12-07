@@ -1,50 +1,8 @@
 //-----------------------------------------------------------------------------
+#include "amx.h"
 #include "compiler.h"
 //-----------------------------------------------------------------------------
-namespace pawn {
-#include "pawn/amx/amx.h"
-}
-//-----------------------------------------------------------------------------
 using namespace boost::python;
-//-----------------------------------------------------------------------------
-
-class IOError : exception
-{
-public:
-  const char* what() throw() { return "IOError"; }
-};
-//-----------------------------------------------------------------------------
-
-class AMX
-{
-public:
-  AMX(const string& filename) throw()
-    : _filename(filename) {
-    cout << __FUNCTION__ <<  " filename=" << _filename << endl;
-
-    ifstream file(filename);
-    if(!file.is_open())
-      throw IOError();
-
-    size_t size = file.tellg();
-    _data.resize(size);
-    file.seekg (0, ios::beg);
-    file.read (reinterpret_cast<char*>(_data.data()), size);
-    file.close();
-
-    _hdr = reinterpret_cast<pawn::AMX_HEADER*>(_data.data());
-  }
-
-  int32_t size() const {
-    return _hdr->size;
-  }
-
-private:
-  string _filename;
-  vector<uint8_t> _data;
-
-  pawn::AMX_HEADER* _hdr;
-};
 //-----------------------------------------------------------------------------
 
 void translator(exception const& e) {

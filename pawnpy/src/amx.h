@@ -1,16 +1,23 @@
 //-----------------------------------------------------------------------------
-#include "gtest/gtest.h"
+#include "common.h"
 //-----------------------------------------------------------------------------
-#include "amx.h"
-#include "compiler.h"
-//-----------------------------------------------------------------------------
-
-TEST(CompileTest, SimpleCompile) {
-  cc("/home/pavel/pawnpy/pawnpy/src/pawn/examples/hello.p");
+namespace pawn {
+#include "pawn/amx/amx.h"
 }
 //-----------------------------------------------------------------------------
 
-TEST(CompileTest, CreateAMX) {
-  AMX amx("./hello.amx");
-}
+class AMX
+{
+public:
+  AMX(const string& filename) throw();
+
+  int32_t size() const;
+
+private:
+  string _filename;
+  vector<uint8_t> _data;
+
+  pawn::AMX_HEADER* _hdr;
+};
 //-----------------------------------------------------------------------------
+

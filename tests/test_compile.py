@@ -8,6 +8,6 @@ basedir = os.path.dirname(os.path.realpath(__file__))
 class TestCompile(unittest.TestCase):
 
     def test_compile(self):
-        pawnpy.cc('/home/pavel/pawnpy/pawnpy/src/pawn/examples/hello.p',
+        pawnpy.cc(os.path.join(basedir, '../pawnpy/src/pawn/examples/hello.p'),
                   basedir + '/hello.amx',
-                  '/home/pavel/pawnpy/pawnpy/src/pawn/include')
+                  os.path.join(basedir, '../pawnpy/src/pawn/include'))

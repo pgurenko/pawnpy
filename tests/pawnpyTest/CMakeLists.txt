@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}
   ${PAWNCC_SRCS}
   ${GTEST_DIR}/src/gtest-all.cc
   ${GTEST_DIR}/src/gtest_main.cc
+  ${PAWNPY}/src/amx.cpp
   ${PAWNPY}/src/compiler.cpp
   src/pawnpyTest.cpp)
 
