@@ -6,11 +6,11 @@ namespace pawn {
 }
 //-----------------------------------------------------------------------------
 
-void cc(string input, string output) {
-  cout << __FUNCTION__ << " " << input << " " << output << endl;
+void cc(string input, string output, string includes) {
+  cout << __FUNCTION__ << " " << input << " " << output << " " << includes << endl;
 
   vector<string> args;
-  args.push_back("pawnpyTest");
+  args.push_back("pawncc");
   args.push_back(input);
 
   if(!output.empty()) {
@@ -19,11 +19,17 @@ void cc(string input, string output) {
     args.push_back(ss.str());
   }
 
+  if(!includes.empty()) {
+    stringstream ss;
+    ss << "-i" << includes;
+    args.push_back(ss.str());
+  }
+
   vector<char*> argv;
   for(auto& s: args) {
     argv.push_back(&s[0]);
   }
-  argv.push_back("\0");
-  pawn::pc_compile(argv.size(), argv.data());
+  argv.push_back(NULL);
+  pawn::pc_compile(argv.size() - 1, &argv[0]);
 }
 //-----------------------------------------------------------------------------

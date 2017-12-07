@@ -9,4 +9,5 @@ class TestCompile(unittest.TestCase):
 
     def test_compile(self):
         pawnpy.cc('/home/pavel/pawnpy/pawnpy/src/pawn/examples/hello.p',
-                  basedir + '/hello.amx')
+                  basedir + '/hello.amx',
+                  '/home/pavel/pawnpy/pawnpy/src/pawn/include')
