@@ -2,7 +2,8 @@
 #include "amx.h"
 #include "compiler.h"
 //-----------------------------------------------------------------------------
-using namespace boost::python;
+namespace py = boost::python;
+using namespace py;
 //-----------------------------------------------------------------------------
 
 void translator(exception const& e) {
@@ -10,13 +11,20 @@ void translator(exception const& e) {
 }
 //-----------------------------------------------------------------------------
 
+class PyAMX : public class_<AMX> {
+public:
+  PyAMX() : class_<AMX>("AMX", init<std::string>()) {
+  };
+};
+//-----------------------------------------------------------------------------
+
 BOOST_PYTHON_MODULE(pawnpy) {
   register_exception_translator<exception>(translator);
 
-  def("cc", cc, (boost::python::arg("input"), boost::python::arg("output") = ""));
+  def("cc", cc, (py::arg("input"),
+                 py::arg("output") = "",
+                 py::arg("includes") = ""));
 
-  class_<AMX>("AMX", init<std::string>())
-      .def_readonly("size", &AMX::size)
-      ;
+  PyAMX();
 }
 //-----------------------------------------------------------------------------

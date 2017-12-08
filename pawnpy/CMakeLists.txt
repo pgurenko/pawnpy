@@ -8,6 +8,7 @@ include(cmake.base.txt)
 
 add_library(${PROJECT_NAME} SHARED
   ${PAWNCC_SRCS}
+  ${PAWNAMX_SRCS}
   src/amx.cpp
   src/compiler.cpp
   src/main.cpp)

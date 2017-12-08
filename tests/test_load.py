@@ -12,4 +12,4 @@ class TestLoad(unittest.TestCase):
                   basedir + '/hello.amx',
                   os.path.join(basedir, '../pawnpy/src/pawn/include'))
         amx = pawnpy.AMX(basedir + '/hello.amx')
-        print(amx.size)
+        amx.main()

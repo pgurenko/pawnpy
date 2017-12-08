@@ -55,7 +55,13 @@ set(PAWNCC_SRCS
   ${PAWNCC}/scvars.c
   ${PAWNCC}/lstring.c
   ${PAWNCC}/memfile.c
-  ${PAWNAMX}/keeloq.c)
+  ${PAWNAMX}/keeloq.c
+)
+
+set(PAWNAMX_SRCS
+  ${PAWNAMX}/amx.c
+)
+
 if(WIN32)
   set(PAWNCC_SRCS ${PAWNCC_SRCS} pawncc.rc)
 ENDIF(WIN32)

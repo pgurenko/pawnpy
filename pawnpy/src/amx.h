@@ -9,15 +9,21 @@ namespace pawn {
 class AMX
 {
 public:
-  AMX(const string& filename) throw();
+  AMX(const string& filename);
+  ~AMX();
 
-  int32_t size() const;
+  int NumNatives();
+  int NumPublics();
+  int NumPubVars();
+  int NumTags();
+
+  string GetPublic(int index);
 
 private:
   string _filename;
   vector<uint8_t> _data;
 
-  pawn::AMX_HEADER* _hdr;
+  pawn::AMX _amx;
 };
 //-----------------------------------------------------------------------------
 
