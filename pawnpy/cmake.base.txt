@@ -28,8 +28,6 @@ IF(UNIX)
 ENDIF(UNIX)
 IF(WIN32)
   ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-ELSE(WIN32)
-  set(CMAKE_SHARED_LIBRARY_PREFIX "")
 ENDIF(WIN32)
 IF(APPLE)
   set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
@@ -70,20 +68,6 @@ IF(UNIX)
 ENDIF(UNIX)
 
 add_definitions(-DNO_ENTRYPOINT)
-
-set(Boost_USE_STATIC_LIBS       ON)
-set(Boost_USE_MULTITHREADED     ON)
-set(Boost_USE_STATIC_RUNTIME    ON)
-
-find_package(PythonLibs REQUIRED)
-
-IF(APPLE)
-  find_package(Boost 1.58.0 REQUIRED COMPONENTS system python3)
-ENDIF(APPLE)
-
-IF(UNIX)
-  find_package(Boost 1.58.0 REQUIRED COMPONENTS system python-py35)
-ENDIF(UNIX)
 
 include_directories(
   ${Boost_INCLUDE_DIRS}
