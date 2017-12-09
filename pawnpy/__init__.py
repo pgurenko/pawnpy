@@ -15,6 +15,7 @@ def cc(input, output=None, includes=None):
     argv = []
     argv.append('pawnc')
     argv.append(input)
+    argv.append('-v2')
     if output:
         argv.append('-o' + output)
     if includes:
@@ -153,7 +154,9 @@ lib.amx_NumNatives.argtypes = (POINTER(AMXNative), POINTER(c_int))
 lib.amx_NumPublics.argtypes = (POINTER(AMXNative), POINTER(c_int))
 lib.amx_NumPubVars.argtypes = (POINTER(AMXNative), POINTER(c_int))
 lib.amx_NumTags.argtypes = (POINTER(AMXNative), POINTER(c_int))
-
+lib.amx_Push.argtypes = (POINTER(AMXNative), c_cell)
+lib.amx_Exec.argtypes = (POINTER(AMXNative), POINTER(c_cell), c_int)
+lib.amx_FindPublic.argtypes = (POINTER(AMXNative), c_char_p, POINTER(c_int))
 
 class AMX():
 
@@ -181,12 +184,13 @@ class AMX():
 
         print(numNatives)
 
-        name = create_string_buffer(sNAMEMAX + 1)
-        result = lib.amx_GetNative(byref(self._amx), 0, name, None)
-        if result != AMX_ERR_NONE:
-            raise Exception('amx_GetNative failed with code %d' % result)
+        if numNatives.value != 0:
+            name = create_string_buffer(sNAMEMAX + 1)
+            result = lib.amx_GetNative(byref(self._amx), 0, name, None)
+            if result != AMX_ERR_NONE:
+                raise Exception('amx_GetNative failed with code %d' % result)
 
-        print(name.value)
+            print(name.value)
 
     def __del__(self):
         if self._amx.base:
@@ -200,3 +204,32 @@ class AMX():
             if refs == 2:
                 print('Cleaning up binary for %s' % self._filename)
                 AMX._binary_cache.pop(self._filename)
+
+    def exec(self, func_name, *args):
+        """
+        All you can eat function
+
+        @param func_name: Name of public function to execute
+        @param args: arguments to this function
+
+        @return: whatever public function returns
+        @throw: different execptions based  on different things
+        """
+
+        index = c_int()
+        if func_name == 'main':
+            index.value = -1
+        else:
+            if AMX_ERR_NONE != lib.amx_FindPublic(byref(self._amx), c_char_p(func_name.encode('utf-8')), byref(index)):
+                raise KeyError("Public function %s not found" % func_name)
+
+        for arg in reversed(args):
+            #push them into stack
+            lib.amx_Push(self._amx, arg)
+
+        ret_val = c_int()
+        err_code = lib.amx_Exec(byref(self._amx), byref(ret_val), index)
+        if AMX_ERR_NONE != err_code:
+            raise RuntimeError("Error calling %s function, code %d" % (func_name, err_code))
+
+        return ret_val.value
