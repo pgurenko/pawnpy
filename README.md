@@ -16,4 +16,4 @@ amx = pawnpy.AMX('./hello.amx')
 amx.main()
 ```
 
-The wrapper itself is the C++ extension for Python using boost python to interface Python and pawn library to interface pawn.
+The wrapper itself is the ctypes-based Python library plus pawn library built for major platforms.
