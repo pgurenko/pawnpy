@@ -12,4 +12,11 @@ class TestLoad(unittest.TestCase):
                   basedir + '/hello2.amx',
                   os.path.join(basedir, '../pawnpy/src/pawn/include'))
         amx = pawnpy.AMX(basedir + '/hello2.amx')
+        # amx.exec('main')
+        # amx.main()
+
+    def test_load2(self):
+        pawnpy.cc(basedir + '/test.p', output=basedir + '/test.amx')
+        amx = pawnpy.AMX(basedir + '/test.amx')
+        self.assertEqual(0, amx.exec('main'))
         # amx.main()
