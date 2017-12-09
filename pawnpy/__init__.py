@@ -1,8 +1,8 @@
 import os
+import sys
 from ctypes import (CDLL, POINTER, c_int, c_long,
-                    c_char_p, c_void_p, addressof,
+                    create_string_buffer, c_char_p, c_void_p, byref,
                     memset, sizeof, CFUNCTYPE, Structure)
-
 c_cell = c_int
 
 basedir = os.path.dirname(os.path.realpath(__file__))
@@ -24,6 +24,39 @@ def cc(input, output=None, includes=None):
     for i, arg in enumerate(argv):
         arr[i] = arg.encode('utf-8')
     lib.pc_compile(len(argv), arr)
+
+
+# /* reserve the first 15 error codes for exit codes of the abstract machine */
+AMX_ERR_NONE = 0
+AMX_ERR_EXIT = 1  # /* forced exit */
+AMX_ERR_ASSERT = 2  # /* assertion failed */
+AMX_ERR_STACKERR = 3  # /* stack/heap collision */
+AMX_ERR_BOUNDS = 4  # /* index out of bounds */
+AMX_ERR_MEMACCESS = 5  # /* invalid memory access */
+AMX_ERR_INVINSTR = 6  # /* invalid instruction */
+AMX_ERR_STACKLOW = 7  # * stack underflow */
+AMX_ERR_HEAPLOW = 8  # /* heap underflow */
+AMX_ERR_CALLBACK = 9  # /* no callback, or invalid callback */
+AMX_ERR_NATIVE = 10  # /* native function failed */
+AMX_ERR_DIVIDE = 11  # /* divide by zero */
+AMX_ERR_SLEEP = 12  # /* go into sleepmode - code can be restarted */
+AMX_ERR_INVSTATE = 13  # /* no implementation for this state, no fall-back */
+
+AMX_ERR_MEMORY = 16,  # /* out of memory */
+AMX_ERR_FORMAT = 17  # /* invalid file format */
+AMX_ERR_VERSION = 18  # /* file is for a newer version of the AMX */
+AMX_ERR_NOTFOUND = 19  # /* function not found */
+AMX_ERR_INDEX = 20  # /* invalid index parameter (bad entry point) */
+AMX_ERR_DEBUG = 21  # /* debugger cannot run */
+AMX_ERR_INIT = 22  # /* AMX not initialized (or doubly initialized) */
+AMX_ERR_USERDATA = 23  # /* unable to set user data field (table full) */
+AMX_ERR_INIT_JIT = 24  # /* cannot initialize the JIT */
+AMX_ERR_PARAMS = 25  # /* parameter error */
+AMX_ERR_DOMAIN = 26  # /* domain error, expression result does not fit in range */
+AMX_ERR_GENERAL = 27  # /* general error (unknown or unspecific error) */
+AMX_ERR_OVERLAY = 28  # /* overlays are unsupported (JIT) or uninitialized */
+
+sNAMEMAX = 31  # /* maximum name length of symbol name */
 
 
 class AMXNative(Structure):
@@ -111,15 +144,59 @@ AMXNative._fields_ = [
 
 AMXNative._pack_ = 1
 
-lib.amx_Init.argtypes = (c_int, POINTER(AMXNative), c_void_p)
+lib.amx_Init.argtypes = (POINTER(AMXNative), c_void_p)
+lib.amx_Cleanup.argtypes = (POINTER(AMXNative),)
+lib.amx_GetNative.argtypes = (POINTER(AMXNative), c_int, c_char_p)
+lib.amx_GetPublic.argtypes = (
+    POINTER(AMXNative), c_int, c_char_p, POINTER(c_int))
+lib.amx_NumNatives.argtypes = (POINTER(AMXNative), POINTER(c_int))
+lib.amx_NumPublics.argtypes = (POINTER(AMXNative), POINTER(c_int))
+lib.amx_NumPubVars.argtypes = (POINTER(AMXNative), POINTER(c_int))
+lib.amx_NumTags.argtypes = (POINTER(AMXNative), POINTER(c_int))
 
 
 class AMX():
 
-    def __init__(self, filename):
-        self._amx = AMXNative()
-        memset(addressof(self._amx), 0, sizeof(AMXNative))
+    _binary_cache = {}
 
-        with open(fileName, mode='rb') as file:
-            content = file.read()
-            amx_Init(addressof(self._amx), content)
+    def __init__(self, filename):
+        self._filename = filename
+        self._amx = AMXNative()
+        memset(byref(self._amx), 0, sizeof(AMXNative))
+
+        self._binary = AMX._binary_cache.get(filename, None)
+        if not self._binary:
+            with open(filename, mode='rb') as f:
+                self._binary = f.read()
+                AMX._binary_cache[filename] = self._binary
+
+        result = lib.amx_Init(byref(self._amx), self._binary)
+        if result != AMX_ERR_NONE:
+            raise Exception('amx_Init failed with code %d' % result)
+
+        numNatives = c_int()
+        result = lib.amx_NumNatives(byref(self._amx), byref(numNatives))
+        if result != AMX_ERR_NONE:
+            raise Exception('amx_NumNatives failed with code %d' % result)
+
+        print(numNatives)
+
+        name = create_string_buffer(sNAMEMAX + 1)
+        result = lib.amx_GetNative(byref(self._amx), 0, name, None)
+        if result != AMX_ERR_NONE:
+            raise Exception('amx_GetNative failed with code %d' % result)
+
+        print(name.value)
+
+    def __del__(self):
+        if self._amx.base:
+            lib.amx_Cleanup(byref(self._amx))
+
+        self._binary = None
+
+        binary = AMX._binary_cache.get(self._filename, None)
+        if binary:
+            refs = sys.getrefcount(binary)
+            if refs == 2:
+                print('Cleaning up binary for %s' % self._filename)
+                AMX._binary_cache.pop(self._filename)
