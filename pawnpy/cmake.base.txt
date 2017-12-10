@@ -22,7 +22,7 @@ IF(HAVE_ALLOCA_H)
 ENDIF(HAVE_ALLOCA_H)
 
 IF(UNIX)
-  ADD_DEFINITIONS(-DENABLE_BINRELOC -D_GNU_SOURCE)
+  ADD_DEFINITIONS(-DENABLE_BINRELOC -D_GNU_SOURCE -DNO_ENTRYPOINT)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../linux)
   LINK_LIBRARIES(pthread m) #CMake adds the "lib" prefix, so "pthread" becomes "libpthread"
 ENDIF(UNIX)
@@ -54,10 +54,12 @@ set(PAWNCC_SRCS
   ${PAWNCC}/lstring.c
   ${PAWNCC}/memfile.c
   ${PAWNAMX}/keeloq.c
+  ${PAWN}/linux/binreloc.c
 )
 
 set(PAWNAMX_SRCS
   ${PAWNAMX}/amx.c
+  ${PAWNAMX}/amxaux.c
 )
 
 if(WIN32)
