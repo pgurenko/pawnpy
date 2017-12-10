@@ -145,8 +145,6 @@ AMXNative._fields_ = [
 
 AMXNative._pack_ = 1
 
-lib.amx_Init.argtypes = (POINTER(AMXNative), c_void_p)
-lib.amx_Cleanup.argtypes = (POINTER(AMXNative),)
 lib.amx_GetNative.argtypes = (POINTER(AMXNative), c_int, c_char_p)
 lib.amx_GetPublic.argtypes = (
     POINTER(AMXNative), c_int, c_char_p, POINTER(c_int))
@@ -158,24 +156,20 @@ lib.amx_Push.argtypes = (POINTER(AMXNative), c_cell)
 lib.amx_Exec.argtypes = (POINTER(AMXNative), POINTER(c_cell), c_int)
 lib.amx_FindPublic.argtypes = (POINTER(AMXNative), c_char_p, POINTER(c_int))
 
-class AMX():
+#aux functions to simplify loading
+lib.aux_LoadProgram.argtypes = (POINTER(AMXNative), c_char_p, c_void_p)
+lib.aux_FreeProgram.argtypes = (POINTER(AMXNative),)
 
-    _binary_cache = {}
+
+class AMX():
 
     def __init__(self, filename):
         self._filename = filename
         self._amx = AMXNative()
-        memset(byref(self._amx), 0, sizeof(AMXNative))
 
-        self._binary = AMX._binary_cache.get(filename, None)
-        if not self._binary:
-            with open(filename, mode='rb') as f:
-                self._binary = f.read()
-                AMX._binary_cache[filename] = self._binary
-
-        result = lib.amx_Init(byref(self._amx), self._binary)
+        result = lib.aux_LoadProgram(byref(self._amx), c_char_p(filename.encode('utf-8')), 0)
         if result != AMX_ERR_NONE:
-            raise Exception('amx_Init failed with code %d' % result)
+            raise Exception('aux_LoadProgram failed with code %d' % result)
 
         numNatives = c_int()
         result = lib.amx_NumNatives(byref(self._amx), byref(numNatives))
@@ -194,16 +188,7 @@ class AMX():
 
     def __del__(self):
         if self._amx.base:
-            lib.amx_Cleanup(byref(self._amx))
-
-        self._binary = None
-
-        binary = AMX._binary_cache.get(self._filename, None)
-        if binary:
-            refs = sys.getrefcount(binary)
-            if refs == 2:
-                print('Cleaning up binary for %s' % self._filename)
-                AMX._binary_cache.pop(self._filename)
+            lib.aux_FreeProgram(byref(self._amx))
 
     def exec(self, func_name, *args):
         """
