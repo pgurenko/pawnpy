@@ -244,7 +244,7 @@ class AMX():
             self._natives[i].name = name.encode('utf-8')
             self._natives[i].func = AMX_NATIVE(self._callback)
 
-        lib.amx_Register(self._amx, self._natives, -1)
+        lib.amx_Register(self._amx, self._natives, num_natives.value)
 
     def __del__(self):
         if self._amx.base:
