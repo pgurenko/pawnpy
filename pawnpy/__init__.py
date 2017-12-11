@@ -214,12 +214,10 @@ class AMX():
             err_code = lib.amx_GetPublic(byref(self._amx), i, name, None)
             if AMX_ERR_NONE != err_code:
                 raise RuntimeError(
-                    'amx_NumPublics failed with code %d' % result)
+                    'amx_GetPublic failed with code %d' % result)
 
             name = codecs.decode(name.value)
             self._publics.append(name)
-
-            print('Public function %s' % name)
 
             setattr(self, name, lambda *args: self._exec(i, *args))
 
@@ -245,8 +243,6 @@ class AMX():
                 pass
 
             name = codecs.decode(name.value)
-
-            print('Found native function %s' % name)
 
             self._natives[i].name = name.encode('utf-8')
             self._natives[i].func = AMX_NATIVE(_dummy)
@@ -276,12 +272,11 @@ class AMX():
         ret_val = c_int()
         err_code = lib.amx_Exec(byref(self._amx), byref(ret_val), index)
         if AMX_ERR_NONE != err_code:
-            func_name = self._publics[func_id] if func_id >= 1 else 'main'
+            func_name = 'main' if func_id == -1 else self._publics[func_id]
             raise RuntimeError(
                 "amx_Exec failed for %s, code %d" % (func_name, err_code))
 
         return ret_val.value
 
     def _callback(self, amx, index, result, params):
-        print('Called %d function' % index)
         return 0
