@@ -193,9 +193,6 @@ class AMX():
         self._natives = None
         self.__init_natives()
 
-        self._callbackptr = AMX_CALLBACK(self._callback)
-        lib.amx_SetCallback(self._amx, self._callbackptr)
-
     def __init_publics(self):
         """Fills publics info and hooks them up to AMX attrs"""
 
@@ -239,13 +236,13 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetNative failed with code %d' % err_code)
 
-            def _dummy():
-                pass
+            def _callback(amx, args):
+                return 0
 
             name = codecs.decode(name.value)
 
             self._natives[i].name = name.encode('utf-8')
-            self._natives[i].func = AMX_NATIVE(_dummy)
+            self._natives[i].func = AMX_NATIVE(_callback)
 
         lib.amx_Register(self._amx, self._natives, -1)
 
@@ -277,6 +274,3 @@ class AMX():
                 "amx_Exec failed for %s, code %d" % (func_name, err_code))
 
         return ret_val.value
-
-    def _callback(self, amx, index, result, params):
-        return 0
