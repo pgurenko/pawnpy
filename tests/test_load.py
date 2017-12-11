@@ -18,6 +18,6 @@ class TestLoad(unittest.TestCase):
     def test_load2(self):
         pawnpy.cc(basedir + '/test.p', output=basedir + '/test.amx')
         amx = pawnpy.AMX(basedir + '/test.amx')
-        self.assertEqual(1, amx.exec('main'))
-        self.assertEqual(2, amx.exec('foo', 10, 8))
-        self.assertEqual(-2, amx.exec('foo', 8, 10))
+        self.assertEqual(1, amx._exec('main'))
+        self.assertEqual(2, amx._exec('foo', 10, 8))
+        self.assertEqual(-2, amx._exec('foo', 8, 10))
