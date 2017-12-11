@@ -64,6 +64,7 @@ sNAMEMAX = 31  # /* maximum name length of symbol name */
 class AMXNative(Structure):
     pass
 
+
 # typedef c_cell (AMX_NATIVE_CALL *AMX_NATIVE)(struct tagAMX *amx, const
 # cell *params);
 AMX_NATIVE = CFUNCTYPE(c_cell, POINTER(AMXNative), POINTER(c_cell))
@@ -184,96 +185,100 @@ class AMX():
         result = lib.aux_LoadProgram(
             byref(self._amx), c_char_p(filename.encode('utf-8')), 0)
         if result != AMX_ERR_NONE:
-            raise Exception('aux_LoadProgram failed with code %d' % result)
+            raise RuntimeError('aux_LoadProgram failed with code %d' % result)
+
+        self._publics = None
+        self.__init_publics()
+
+        self._natives = None
+        self.__init_natives()
 
         self._callbackptr = AMX_CALLBACK(self._callback)
-
         lib.amx_SetCallback(self._amx, self._callbackptr)
+
+    def __init_publics(self):
+        """Fills publics info and hooks them up to AMX attrs"""
+
+        setattr(self, 'main', lambda *args: self._exec(-1, *args))
+
+        num_publics = c_int()
+        err_code = lib.amx_NumPublics(byref(self._amx), byref(num_publics))
+        if AMX_ERR_NONE != err_code:
+            raise RuntimeError('amx_NumPublics failed with code %d' % result)
 
         self._publics = []
 
-        numPublics = c_int()
-        result = lib.amx_NumPublics(byref(self._amx), byref(numPublics))
-        if result != AMX_ERR_NONE:
-            raise Exception('amx_NumPublics failed with code %d' % result)
-
-        if numPublics.value != 0:
+        for i in range(num_publics.value):
             name = create_string_buffer(sNAMEMAX + 1)
-            result = lib.amx_GetPublic(byref(self._amx), 0, name, None)
-            if result != AMX_ERR_NONE:
-                raise Exception('amx_GetPublic failed with code %d' % result)
 
-            name = codecs.decode(name, encoding='utf-8')
+            err_code = lib.amx_GetPublic(byref(self._amx), i, name, None)
+            if AMX_ERR_NONE != err_code:
+                raise RuntimeError(
+                    'amx_NumPublics failed with code %d' % result)
+
+            name = codecs.decode(name.value, encoding='utf-8')
             self._publics.append(name)
 
-            print('Found public function %s' % name)
+            print('Public function %s' % name)
 
-            setattr(self, name, lambda: self._exec(name))
+            setattr(self, name, lambda *args: self._exec(i, *args))
 
-        self._natives = None
+    def __init_natives(self):
+        num_natives = c_int()
+        err_code = lib.amx_NumNatives(byref(self._amx), byref(num_natives))
+        if err_code != AMX_ERR_NONE:
+            raise RuntimeError('amx_NumNatives failed with code %d' % err_code)
 
-        numNatives = c_int()
-        result = lib.amx_NumNatives(byref(self._amx), byref(numNatives))
-        if result != AMX_ERR_NONE:
-            raise Exception('amx_NumNatives failed with code %d' % result)
+        if num_natives.value == 0:
+            return
 
-        self._natives = (AMX_NATIVE_INFO * numNatives.value)()
+        self._natives = (AMX_NATIVE_INFO * num_natives.value)()
 
-        if numNatives.value != 0:
+        for i in range(num_natives.value):
+            name = create_string_buffer(sNAMEMAX + 1)
+            err_code = lib.amx_GetNative(byref(self._amx), i, name, None)
+            if err_code != AMX_ERR_NONE:
+                raise RuntimeError(
+                    'amx_GetNative failed with code %d' % err_code)
 
-            for i in range(numNatives.value):
-                name = create_string_buffer(sNAMEMAX + 1)
-                result = lib.amx_GetNative(byref(self._amx), i, name, None)
-                if result != AMX_ERR_NONE:
-                    raise Exception(
-                        'amx_GetNative failed with code %d' % result)
+            def _dummy():
+                pass
 
-                def _dummy():
-                    pass
+            name = codecs.decode(name.value, encoding='utf-8')
 
-                name = codecs.decode(name, encoding='utf-8')
+            print('Found native function %s' % name)
 
-                print('Found native function %s' % name)
+            self._natives[i].name = name.encode('utf-8')
+            self._natives[i].func = AMX_NATIVE(_dummy)
 
-                self._natives[i].name = name.encode('utf-8')
-                self._natives[i].func = AMX_NATIVE(_dummy)
-
-            lib.amx_Register(self._amx, self._natives, -1)
-
-            # int AMXAPI amx_Register(AMX *amx, const AMX_NATIVE_INFO
-            # *nativelist, int number);
+        lib.amx_Register(self._amx, self._natives, -1)
 
     def __del__(self):
         if self._amx.base:
             lib.aux_FreeProgram(byref(self._amx))
 
-    def _exec(self, func_name, *args):
+    def _exec(self, func_id, *args):
         """
         All you can eat function
 
-        @param func_name: Name of public function to execute
+        @param func_id: Id of public function to execute
         @param args: arguments to this function
 
         @return: whatever public function returns
         @throw: different execptions based  on different things
         """
 
-        index = c_int()
-        if func_name == 'main':
-            index.value = -1
-        else:
-            if AMX_ERR_NONE != lib.amx_FindPublic(byref(self._amx), c_char_p(func_name.encode('utf-8')), byref(index)):
-                raise KeyError("Public function %s not found" % func_name)
-
         for arg in reversed(args):
             # push them into stack
             lib.amx_Push(self._amx, arg)
 
+        index = c_long(func_id)
         ret_val = c_int()
         err_code = lib.amx_Exec(byref(self._amx), byref(ret_val), index)
         if AMX_ERR_NONE != err_code:
+            func_name = self._publics[func_id] if func_id >= 1 else 'main'
             raise RuntimeError(
-                "Error calling %s function, code %d" % (func_name, err_code))
+                "amx_Exec failed for %s, code %d" % (func_name, err_code))
 
         return ret_val.value
 
