@@ -218,6 +218,9 @@ class AMX():
 
             setattr(self, name, lambda *args: self._exec(i, *args))
 
+    def _callback(self, amx, args):
+        return 0
+
     def __init_natives(self):
         num_natives = c_int()
         err_code = lib.amx_NumNatives(byref(self._amx), byref(num_natives))
@@ -236,13 +239,10 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetNative failed with code %d' % err_code)
 
-            def _callback(amx, args):
-                return 0
-
             name = codecs.decode(name.value)
 
             self._natives[i].name = name.encode('utf-8')
-            self._natives[i].func = AMX_NATIVE(_callback)
+            self._natives[i].func = AMX_NATIVE(self._callback)
 
         lib.amx_Register(self._amx, self._natives, -1)
 

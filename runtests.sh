@@ -8,4 +8,6 @@ cd ../../
 
 cp -f pawnpy/build/libpawnpy.so ./pawnpy
 
+echo "Running $(python3 --version)"
+
 python3 -m unittest discover ./tests
