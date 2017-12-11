@@ -21,3 +21,6 @@ class TestLoad(unittest.TestCase):
         self.assertEqual(1, amx.exec('main'))
         self.assertEqual(2, amx.exec('foo', 10, 8))
         self.assertEqual(-2, amx.exec('foo', 8, 10))
+        self.assertEqual(1, amx.main())
+        self.assertEqual(2, amx.foo(10, 8))
+        self.assertEqual(-2, amx.foo(8, 10))
