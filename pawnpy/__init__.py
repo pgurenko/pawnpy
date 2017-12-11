@@ -91,6 +91,7 @@ class AMX_NATIVE_INFO(Structure):
         ('func', AMX_NATIVE),
     ]
 
+
 AMX_USERNUM = 4
 
 AMXNative._fields_ = [
@@ -201,7 +202,7 @@ class AMX():
         num_publics = c_int()
         err_code = lib.amx_NumPublics(byref(self._amx), byref(num_publics))
         if AMX_ERR_NONE != err_code:
-            raise RuntimeError('amx_NumPublics failed with code %d' % result)
+            raise RuntimeError('amx_NumPublics failed with code %d' % err_code)
 
         self._publics = []
 
@@ -211,12 +212,13 @@ class AMX():
             err_code = lib.amx_GetPublic(byref(self._amx), i, name, None)
             if AMX_ERR_NONE != err_code:
                 raise RuntimeError(
-                    'amx_GetPublic failed with code %d' % result)
+                    'amx_GetPublic failed with code %d' % err_code)
 
             name = codecs.decode(name.value)
             self._publics.append(name)
 
-            setattr(self, name, lambda *args: self._exec(i, *args))
+            setattr(self, name, lambda *args,
+                    func_id=i: self._exec(func_id, *args))
 
     def _callback(self, amx, args):
         return 0
