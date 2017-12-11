@@ -272,7 +272,7 @@ class AMX():
             # push them into stack
             lib.amx_Push(self._amx, arg)
 
-        index = c_long(func_id)
+        index = c_int(func_id)
         ret_val = c_int()
         err_code = lib.amx_Exec(byref(self._amx), byref(ret_val), index)
         if AMX_ERR_NONE != err_code:
