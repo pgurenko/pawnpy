@@ -216,7 +216,7 @@ class AMX():
                 raise RuntimeError(
                     'amx_NumPublics failed with code %d' % result)
 
-            name = codecs.decode(name.value, encoding='utf-8')
+            name = codecs.decode(name.value)
             self._publics.append(name)
 
             print('Public function %s' % name)
@@ -244,7 +244,7 @@ class AMX():
             def _dummy():
                 pass
 
-            name = codecs.decode(name.value, encoding='utf-8')
+            name = codecs.decode(name.value)
 
             print('Found native function %s' % name)
 
