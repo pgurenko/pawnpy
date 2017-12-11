@@ -63,6 +63,7 @@ sNAMEMAX = 31  # /* maximum name length of symbol name */
 class AMXNative(Structure):
     pass
 
+
 # typedef c_cell (AMX_NATIVE_CALL *AMX_NATIVE)(struct tagAMX *amx, const
 # cell *params);
 AMX_NATIVE = CFUNCTYPE(c_cell, POINTER(AMXNative), POINTER(c_cell))
@@ -156,7 +157,7 @@ lib.amx_Push.argtypes = (POINTER(AMXNative), c_cell)
 lib.amx_Exec.argtypes = (POINTER(AMXNative), POINTER(c_cell), c_int)
 lib.amx_FindPublic.argtypes = (POINTER(AMXNative), c_char_p, POINTER(c_int))
 
-#aux functions to simplify loading
+# aux functions to simplify loading
 lib.aux_LoadProgram.argtypes = (POINTER(AMXNative), c_char_p, c_void_p)
 lib.aux_FreeProgram.argtypes = (POINTER(AMXNative),)
 
@@ -166,8 +167,10 @@ class AMX():
     def __init__(self, filename):
         self._filename = filename
         self._amx = AMXNative()
+        self._public_functions = dict()  # name:str -> index:number
 
-        result = lib.aux_LoadProgram(byref(self._amx), c_char_p(filename.encode('utf-8')), 0)
+        result = lib.aux_LoadProgram(
+            byref(self._amx), c_char_p(filename.encode('utf-8')), 0)
         if result != AMX_ERR_NONE:
             raise Exception('aux_LoadProgram failed with code %d' % result)
 
@@ -186,6 +189,29 @@ class AMX():
 
             print(name.value)
 
+        self.__read_all_public_functions()
+
+    def __read_all_public_functions(self):
+        """Reads all public functions and store name -> index in self._public_functions"""
+
+        num_pub_func = c_int()
+        err_code = lib.amx_NumPublics(byref(self._amx), byref(num_pub_func))
+        if AMX_ERR_NONE != err_code:
+            raise RuntimeError(
+                "Error calling getting public functions count, code %d" % err_code)
+
+        for i in range(0, num_pub_func.value):
+            name = create_string_buffer(sNAMEMAX + 1)
+
+            err_code = lib.amx_GetPublic(byref(self._amx), i, name, None)
+            if AMX_ERR_NONE != err_code:
+                raise RuntimeError(
+                    "Can't read name of %d public function, code %d" % (i, err_code))
+
+            self._public_functions[str(name.value, 'utf-8')] = i
+
+        self._public_functions['main'] = -1
+
     def __del__(self):
         if self._amx.base:
             lib.aux_FreeProgram(byref(self._amx))
@@ -201,20 +227,22 @@ class AMX():
         @throw: different execptions based  on different things
         """
 
-        index = c_int()
-        if func_name == 'main':
-            index.value = -1
-        else:
-            if AMX_ERR_NONE != lib.amx_FindPublic(byref(self._amx), c_char_p(func_name.encode('utf-8')), byref(index)):
-                raise KeyError("Public function %s not found" % func_name)
+        index = self._public_functions[func_name]
 
         for arg in reversed(args):
-            #push them into stack
+            # push them into stack
             lib.amx_Push(self._amx, arg)
 
         ret_val = c_int()
         err_code = lib.amx_Exec(byref(self._amx), byref(ret_val), index)
         if AMX_ERR_NONE != err_code:
-            raise RuntimeError("Error calling %s function, code %d" % (func_name, err_code))
+            raise RuntimeError(
+                "Error calling %s function, code %d" % (func_name, err_code))
 
         return ret_val.value
+
+    def __getattr__(self, attr):
+        def __wrapper(*args):
+            return self.exec(attr, *args)
+
+        return __wrapper
