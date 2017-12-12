@@ -1,6 +1,5 @@
 import os
 import sys
-import codecs
 from ctypes import (CDLL, POINTER, c_int, c_long,
                     create_string_buffer, c_char_p, c_void_p, byref,
                     memset, sizeof, CFUNCTYPE, Structure)
@@ -179,8 +178,9 @@ lib.aux_FreeProgram.argtypes = (POINTER(AMXNative),)
 
 class AMX():
 
-    def __init__(self, filename):
+    def __init__(self, filename, native_sink=None):
         self._filename = filename
+        self._native_sink = native_sink
         self._amx = AMXNative()
 
         result = lib.aux_LoadProgram(
@@ -214,14 +214,11 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetPublic failed with code %d' % err_code)
 
-            name = codecs.decode(name.value)
+            name = str(name.value, 'utf-8')
             self._publics.append(name)
 
             setattr(self, name, lambda *args,
                     func_id=i: self._exec(func_id, *args))
-
-    def _callback(self, amx, args):
-        return 0
 
     def __init_natives(self):
         num_natives = c_int()
@@ -241,10 +238,21 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetNative failed with code %d' % err_code)
 
-            name = codecs.decode(name.value)
+            def callback(name, params):
+                if not self._native_sink:
+                    return 0
 
-            self._natives[i].name = name.encode('utf-8')
-            self._natives[i].func = AMX_NATIVE(self._callback)
+                func = getattr(self._native_sink, name)
+
+                argc = int(params[0] / sizeof(c_cell))
+                args = tuple(params[i] for i in range(1, argc + 1))
+                return func(*args)
+
+            self._natives[i].name = name.value
+
+            name = str(name.value, 'utf-8')
+            self._natives[i].func = AMX_NATIVE(
+                lambda amx, args: callback(name, args))
 
         lib.amx_Register(self._amx, self._natives, num_natives.value)
 
