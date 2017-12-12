@@ -178,7 +178,7 @@ lib.aux_FreeProgram.argtypes = (POINTER(AMXNative),)
 
 class AMX():
 
-    def __init__(self, filename, native_sink=None):
+    def __init__(self, filename, native_sink):
         self._filename = filename
         self._native_sink = native_sink
         self._amx = AMXNative()
@@ -220,6 +220,16 @@ class AMX():
             setattr(self, name, lambda *args,
                     func_id=i: self._exec(func_id, *args))
 
+    class NativeCallback():
+
+        def __init__(self, func):
+            self._func = func
+
+        def __call__(self, amx, params):
+            argc = int(params[0] / sizeof(c_cell))
+            argv = tuple(params[i] for i in range(1, argc + 1))
+            return self._func(*argv)
+
     def __init_natives(self):
         num_natives = c_int()
         err_code = lib.amx_NumNatives(byref(self._amx), byref(num_natives))
@@ -238,21 +248,11 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetNative failed with code %d' % err_code)
 
-            def callback(name, params):
-                if not self._native_sink:
-                    return 0
-
-                func = getattr(self._native_sink, name)
-
-                argc = int(params[0] / sizeof(c_cell))
-                args = tuple(params[i] for i in range(1, argc + 1))
-                return func(*args)
-
             self._natives[i].name = name.value
 
             name = str(name.value, 'utf-8')
-            self._natives[i].func = AMX_NATIVE(
-                lambda amx, args: callback(name, args))
+            func = getattr(self._native_sink, name)
+            self._natives[i].func = AMX_NATIVE(AMX.NativeCallback(func))
 
         lib.amx_Register(self._amx, self._natives, num_natives.value)
 
