@@ -1,6 +1,7 @@
 import os
 import unittest
 import pawnpy
+import subprocess
 
 basedir = os.path.dirname(os.path.realpath(__file__))
 
@@ -24,3 +25,8 @@ class TestLoad(unittest.TestCase):
         self.assertEqual(1, amx.main())
         self.assertEqual(2, amx.foo(10, 8))
         self.assertEqual(-2, amx.foo(8, 10))
+
+    def test_error(self):
+        with self.assertRaises(subprocess.CalledProcessError):
+            pawnpy.cc(basedir + '/test_error.p',
+                      output=basedir + '/test_error.amx')
