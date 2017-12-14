@@ -6,3 +6,4 @@ build*
 *.pyc
 *.amx
 venv/
+pawnpy/pawncc
