@@ -1,7 +1,11 @@
 forward foo(a, b);
+native bar(a, b, c);
+native buzz(a, b, c, d);
 
 main()
 {
+    bar(1, 2, 3);
+    buzz(4, 5, 6, 7);
     return 1;
 }
 

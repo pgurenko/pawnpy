@@ -15,4 +15,6 @@ cd ../../
 cp -f pawnpy/build-lib/libpawnpy.so ./pawnpy
 cp -f pawnpy/build-cc/pawncc ./pawnpy
 
+echo "Running $(python3 --version)"
+
 python3 -m unittest discover ./tests
