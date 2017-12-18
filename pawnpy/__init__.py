@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 from ctypes import (CDLL, POINTER, c_int, c_long,
                     create_string_buffer, c_char_p, c_void_p, byref,
                     memset, sizeof, CFUNCTYPE, Structure)
@@ -13,7 +14,7 @@ lib.pc_compile.argtypes = (c_int, POINTER(c_char_p))
 
 def cc(input, output=None, includes=None):
     argv = []
-    argv.append('pawnc')
+    argv.append(os.path.join(basedir, 'pawncc'))
     argv.append(input)
     argv.append('-v2')
     if output:
@@ -24,7 +25,7 @@ def cc(input, output=None, includes=None):
     arr = (c_char_p * len(argv))()
     for i, arg in enumerate(argv):
         arr[i] = arg.encode('utf-8')
-    lib.pc_compile(len(argv), arr)
+    subprocess.check_call(argv)
 
 
 # /* reserve the first 15 error codes for exit codes of the abstract machine */
