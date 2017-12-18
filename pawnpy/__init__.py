@@ -221,16 +221,6 @@ class AMX():
             setattr(self, name, lambda *args,
                     func_id=i: self._exec(func_id, *args))
 
-    class NativeCallback():
-
-        def __init__(self, func):
-            self._func = func
-
-        def __call__(self, amx, params):
-            argc = int(params[0] / sizeof(c_cell))
-            argv = tuple(params[i] for i in range(1, argc + 1))
-            return self._func(*argv)
-
     def __init_natives(self):
         num_natives = c_int()
         err_code = lib.amx_NumNatives(byref(self._amx), byref(num_natives))
@@ -241,6 +231,7 @@ class AMX():
             return
 
         self._natives = (AMX_NATIVE_INFO * num_natives.value)()
+        self._callbacks = []
 
         for i in range(num_natives.value):
             name = create_string_buffer(sNAMEMAX + 1)
@@ -249,13 +240,22 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetNative failed with code %d' % err_code)
 
-            self._natives[i].name = name.value
+            self._callbacks.append(getattr(self._native_sink, str(name.value, 'utf-8')))
 
-            name = str(name.value, 'utf-8')
-            func = getattr(self._native_sink, name)
-            self._natives[i].func = AMX_NATIVE(AMX.NativeCallback(func))
+            self._natives[i].name = name.value
+            self._natives[i].func = AMX_NATIVE(lambda amx, params: 0)
 
         lib.amx_Register(self._amx, self._natives, num_natives.value)
+        
+        def callback(amx, index, result, params):
+            argc = int(params[0] / sizeof(c_cell))
+            argv = [params[i] for i in range(1, argc + 1)]
+            result.value = self._callbacks[index](*argv)
+            return 0
+
+        self._callback = AMX_CALLBACK(callback)
+
+        lib.amx_SetCallback(self._amx, self._callback)
 
     def __del__(self):
         if self._amx.base:
