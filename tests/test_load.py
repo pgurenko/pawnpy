@@ -11,9 +11,9 @@ basedir = os.path.dirname(os.path.realpath(__file__))
 class TestLoad(unittest.TestCase):
 
     def test_load(self):
-        pawnpy.cc(os.path.join(basedir, '../pawnpy/src/pawn/examples/hello2.p'),
+        pawnpy.cc(os.path.join(basedir, '../pawnpy/pawn/examples/hello2.p'),
                   basedir + '/hello2.amx',
-                  os.path.join(basedir, '../pawnpy/src/pawn/include'))
+                  os.path.join(basedir, '../pawnpy/pawn/include'))
 
         mock_sink = MagicMock()
         amx = pawnpy.AMX(basedir + '/hello2.amx', mock_sink)

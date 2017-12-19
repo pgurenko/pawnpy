@@ -8,9 +8,6 @@ c_cell = c_int
 
 basedir = os.path.dirname(os.path.realpath(__file__))
 
-lib = CDLL(os.path.join(basedir, 'libpawnpy.so'))
-lib.pc_compile.argtypes = (c_int, POINTER(c_char_p))
-
 
 def cc(input, output=None, includes=None):
     argv = []
@@ -27,6 +24,8 @@ def cc(input, output=None, includes=None):
         arr[i] = arg.encode('utf-8')
     subprocess.check_call(argv)
 
+
+lib = CDLL(os.path.join(basedir, 'libpawnpy.so'))
 
 # /* reserve the first 15 error codes for exit codes of the abstract machine */
 AMX_ERR_NONE = 0
@@ -240,13 +239,14 @@ class AMX():
                 raise RuntimeError(
                     'amx_GetNative failed with code %d' % err_code)
 
-            self._callbacks.append(getattr(self._native_sink, str(name.value, 'utf-8')))
+            self._callbacks.append(
+                getattr(self._native_sink, str(name.value, 'utf-8')))
 
             self._natives[i].name = name.value
             self._natives[i].func = AMX_NATIVE(lambda amx, params: 0)
 
         lib.amx_Register(self._amx, self._natives, num_natives.value)
-        
+
         def callback(amx, index, result, params):
             argc = int(params[0] / sizeof(c_cell))
             argv = [params[i] for i in range(1, argc + 1)]

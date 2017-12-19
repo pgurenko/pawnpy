@@ -2,12 +2,21 @@ cmake_minimum_required(VERSION 3.1)
 
 project(pawnpy)
 
-set(PAWN ${CMAKE_CURRENT_SOURCE_DIR}/src/pawn)
+set(PAWN ${CMAKE_CURRENT_SOURCE_DIR}/pawn)
+set(PAWNAMX ${CMAKE_CURRENT_SOURCE_DIR}/pawn/amx)
 
-include(cmake.base.txt)
+add_subdirectory(pawn)
 
-add_library(${PROJECT_NAME} SHARED
-  ${PAWNCC_SRCS}
-  ${PAWNAMX_SRCS}
+IF(APPLE)
+  add_definitions(-DHAVE_SAFESTR)
+ENDIF(APPLE)
+
+include_directories(
+  ${PAWN}/linux
+)
+
+add_library(pawnpy SHARED
+  ${PAWNAMX}/amx.c
+  ${PAWNAMX}/amxaux.c
 )
 
