@@ -1,13 +1,13 @@
 # Building module
 
-mkdir -p pawnpy/build
-cd pawnpy/build
-cmake ../
+mkdir -p build
+cd build
+cmake ../pawnpy
 make pawncc pawnpy -j4
-cd ../../
+cd ../
 
-cp -f pawnpy/build/libpawnpy.so ./pawnpy
-cp -f pawnpy/build/pawncc ./pawnpy
+cp -f build/libpawnpy.so ./pawnpy
+cp -f build/pawncc ./pawnpy
 
 echo "Running $(python3 --version)"
 
