@@ -4,11 +4,12 @@ os:
 compiler:
 - gcc
 script:
-- "./runtests.sh"
+- ./runtests.sh
+- ./package.sh
 deploy:
   provider: releases
   api_key:
     secure: Vh4wRAJddZ+PeeVzYOfB+rASjN1YLJH4u1r/yt7JxyiQUfdi5QxMp2t0HDxSiCRTk+nSwcq3xbCcr9wNx6a4jjFR0EwgM+xBUpWD/GiyRfJHZ4KV+3Q6RohjgE7tLKkrR41Vlrb3UkUimm3YqwMwbyQmQmp2mTRBngADizXXYUbyeWsI7UDLX3rkwiZeVTMtSs0HrhcbgDoEp8Bi0a2BIeYK8pHPS3MrluAeiedMiGEv8sHqRiBA5a2g3UPs5iYlMJWirIQXlnpoinX+WnNbsIAzn7SIsyfDcL3wZYTV74LarK3n7gyoZEYpasXjjPTJegwGjZt1eSGcVxDYJ/sA29BTGGv5oDZG7XJZmlDG5kcmW0iqXBBZAnXU9wwmS6+wrTYDsbxrnrMYZ9XG74iMb31LATFLuuVh9y+MK0MMeOz5s7ZSECN6vpiuW+zq5gc/kvURxbV3+YqLIh4SsVdxNCQBj4yQRTaskxz3dAcK+USj0TKtUMzpGk7lmlPt3qtOc4qce6kM33sci5/AKh/2jvveCF8NPZMpiuKYBIpzOnip0VJCiTI5Y5eJ6IBpIxluI30KB59bvN35ptqnocKOSQvUh5ik2gCdYlz1jNy95REJ5eA84xm1YMkG3rPjDW0Q5XgusC4e9PMHQsioUj8C+3kz6CJV3cVm+SWDiAx6CUk=
-  file: pawnpy.zip
+  file: pawnpy.tar.gz
   on:
     repo: pgurenko/pawnpy
