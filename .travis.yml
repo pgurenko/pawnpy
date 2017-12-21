@@ -15,4 +15,3 @@ jobs:
         file: ./pawnpy*.tar.gz
         on:
           repo: pgurenko/pawnpy
-          tags: true
