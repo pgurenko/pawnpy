@@ -17,6 +17,10 @@ jobs:
       script:
       - ./build.sh
       - ./package.sh
+      - pwd
+      - ls -la
+      - echo @@ $TRAVIS_BUILD_DIR
+      - ls -la
       deploy:
         provider: releases
         api_key:
