@@ -1,16 +1,10 @@
 language: python
 os:
   - linux
-  - osx
-python:
-  - "3.4"
 
 stages:
   - test
   - deploy
-
-install:
-  - echo "Install"
 
 jobs:
   include:
