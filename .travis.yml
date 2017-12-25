@@ -13,6 +13,9 @@ stages:
   - name: deploy
     if: env(TRAVIS_OS_NAME) = linux
 
+install:
+  - echo "Install"
+
 jobs:
   include:
     - stage: test_linux
