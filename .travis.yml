@@ -17,10 +17,10 @@ jobs:
       script:
       - ./build.sh
       - ./package.sh
-      - pwd
-      - ls -la
-      - echo @@ $TRAVIS_BUILD_DIR
-      - ls -la
+      before_deploy:
+      - git config --local user.name "travis-ci"
+      - git config --local user.email "travis@ci"
+      - git tag "$(git describe)"
       deploy:
         provider: releases
         api_key:
