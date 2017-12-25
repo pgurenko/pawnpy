@@ -6,14 +6,16 @@ python:
   - "3.4"
 
 stages:
-  - test_linux
+  - name: test_linux
+    if: env(TRAVIS_OS_NAME) = linux
   - test_osx
+    if: env(TRAVIS_OS_NAME) = osx
   - deploy
+    if: env(TRAVIS_OS_NAME) = linux
 
 jobs:
   include:
     - stage: test_linux
-      if: env(TRAVIS_OS_NAME) = linux
       script:
       - ./build.sh
       - ./runtests.sh
@@ -36,7 +38,6 @@ jobs:
           repo: pgurenko/pawnpy
 
     - stage: test_osx
-      if: env(TRAVIS_OS_NAME) = osx
       script:
       - ./build.sh
       - ./runtests.sh
