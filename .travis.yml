@@ -33,10 +33,6 @@ jobs:
     - stage: deploy
       script:
       - ./package.sh
-      before_deploy:
-      - git config --local user.name "travis-ci"
-      - git config --local user.email "travis@ci"
-      - git tag "$(git describe)"
       deploy:
         provider: releases
         api_key:
