@@ -6,24 +6,20 @@ python:
   - "3.4"
 
 stages:
-  - name: test_linux
-    if: env(TRAVIS_OS_NAME) = linux
-  - name: test_osx
-    if: env(TRAVIS_OS_NAME) = osx
-  - name: deploy
-    if: env(TRAVIS_OS_NAME) = linux
+  - test
+  - deploy
 
 install:
   - echo "Install"
 
 jobs:
   include:
-    - stage: test_linux
+    - stage: test
       script:
       - ./build.sh
       - ./runtests.sh
-      - cp build/libpawnpy.so libpawnpy.linux.x64.so
-      - cp build/pawncc pawncc.linux.x64
+      - cp build/libpawnpy.so libpawnpy.$TRAVIS_OS_NAME.x64.so
+      - cp build/pawncc pawncc.$TRAVIS_OS_NAME.x64
       before_deploy:
       - git config --local user.name "travis-ci"
       - git config --local user.email "travis@ci"
@@ -33,30 +29,8 @@ jobs:
         api_key:
           secure: Vh4wRAJddZ+PeeVzYOfB+rASjN1YLJH4u1r/yt7JxyiQUfdi5QxMp2t0HDxSiCRTk+nSwcq3xbCcr9wNx6a4jjFR0EwgM+xBUpWD/GiyRfJHZ4KV+3Q6RohjgE7tLKkrR41Vlrb3UkUimm3YqwMwbyQmQmp2mTRBngADizXXYUbyeWsI7UDLX3rkwiZeVTMtSs0HrhcbgDoEp8Bi0a2BIeYK8pHPS3MrluAeiedMiGEv8sHqRiBA5a2g3UPs5iYlMJWirIQXlnpoinX+WnNbsIAzn7SIsyfDcL3wZYTV74LarK3n7gyoZEYpasXjjPTJegwGjZt1eSGcVxDYJ/sA29BTGGv5oDZG7XJZmlDG5kcmW0iqXBBZAnXU9wwmS6+wrTYDsbxrnrMYZ9XG74iMb31LATFLuuVh9y+MK0MMeOz5s7ZSECN6vpiuW+zq5gc/kvURxbV3+YqLIh4SsVdxNCQBj4yQRTaskxz3dAcK+USj0TKtUMzpGk7lmlPt3qtOc4qce6kM33sci5/AKh/2jvveCF8NPZMpiuKYBIpzOnip0VJCiTI5Y5eJ6IBpIxluI30KB59bvN35ptqnocKOSQvUh5ik2gCdYlz1jNy95REJ5eA84xm1YMkG3rPjDW0Q5XgusC4e9PMHQsioUj8C+3kz6CJV3cVm+SWDiAx6CUk=
         file:
-        - libpawnpy.linux.x64.so
-        - pawncc.linux.x64
-        skip_cleanup: true
-        overwrite: true
-        on:
-          repo: pgurenko/pawnpy
-
-    - stage: test_osx
-      script:
-      - ./build.sh
-      - ./runtests.sh
-      - cp build/libpawnpy.dylib libpawnpy.darwin.x64.so
-      - cp build/pawncc pawncc.darwin.x64
-      before_deploy:
-      - git config --local user.name "travis-ci"
-      - git config --local user.email "travis@ci"
-      - git tag "$(git describe)"
-      deploy:
-        provider: releases
-        api_key:
-          secure: Vh4wRAJddZ+PeeVzYOfB+rASjN1YLJH4u1r/yt7JxyiQUfdi5QxMp2t0HDxSiCRTk+nSwcq3xbCcr9wNx6a4jjFR0EwgM+xBUpWD/GiyRfJHZ4KV+3Q6RohjgE7tLKkrR41Vlrb3UkUimm3YqwMwbyQmQmp2mTRBngADizXXYUbyeWsI7UDLX3rkwiZeVTMtSs0HrhcbgDoEp8Bi0a2BIeYK8pHPS3MrluAeiedMiGEv8sHqRiBA5a2g3UPs5iYlMJWirIQXlnpoinX+WnNbsIAzn7SIsyfDcL3wZYTV74LarK3n7gyoZEYpasXjjPTJegwGjZt1eSGcVxDYJ/sA29BTGGv5oDZG7XJZmlDG5kcmW0iqXBBZAnXU9wwmS6+wrTYDsbxrnrMYZ9XG74iMb31LATFLuuVh9y+MK0MMeOz5s7ZSECN6vpiuW+zq5gc/kvURxbV3+YqLIh4SsVdxNCQBj4yQRTaskxz3dAcK+USj0TKtUMzpGk7lmlPt3qtOc4qce6kM33sci5/AKh/2jvveCF8NPZMpiuKYBIpzOnip0VJCiTI5Y5eJ6IBpIxluI30KB59bvN35ptqnocKOSQvUh5ik2gCdYlz1jNy95REJ5eA84xm1YMkG3rPjDW0Q5XgusC4e9PMHQsioUj8C+3kz6CJV3cVm+SWDiAx6CUk=
-        file:
-        - libpawnpy.darwin.x64.so
-        - pawncc.darwin.x64
+        - libpawnpy.$TRAVIS_OS_NAME.x64.so
+        - pawncc.$TRAVIS_OS_NAME.x64
         skip_cleanup: true
         overwrite: true
         on:
