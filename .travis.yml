@@ -8,9 +8,9 @@ python:
 stages:
   - name: test_linux
     if: env(TRAVIS_OS_NAME) = linux
-  - test_osx
+  - name: test_osx
     if: env(TRAVIS_OS_NAME) = osx
-  - deploy
+  - name: deploy
     if: env(TRAVIS_OS_NAME) = linux
 
 jobs:
