@@ -15,6 +15,7 @@ jobs:
       - ./runtests.sh
     - stage: deploy
       script:
+      - ./build.sh
       - ./package.sh
       deploy:
         provider: releases
