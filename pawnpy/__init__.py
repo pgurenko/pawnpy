@@ -1,6 +1,5 @@
 import os
 import sys
-import platform
 import subprocess
 from ctypes import (CDLL, POINTER, c_int, c_long,
                     create_string_buffer, c_char_p, c_void_p, byref,
@@ -25,12 +24,27 @@ def cc(input, output=None, includes=None):
         arr[i] = arg.encode('utf-8')
     subprocess.check_call(argv)
 
-if platform.system() == 'Linux':
-    libname = 'libpawnpy.so'
-elif platform.system() == 'Darwin':
-    libname = 'libpawnpy.dylib'
-elif platform.system() == 'Windows':
-    libname = 'pawnpy.dll'
+libname = 'pawnpy'
+
+if sys.maxsize > 2**32:
+    bitness = '.x64'
+else:
+    bitness = '.x86'
+
+if sys.platform == 'win32':
+    libname +=  bitness + '.dll'
+else:
+    libname = 'lib' + libname
+    if sys.platform == 'darwin':
+        if os.path.exists(os.path.join(basedir, libname + '.dylib')):
+            libname += '.dylib'
+        else:
+            libname += '.darwin' + bitness + '.dylib'
+    else:
+        if os.path.exists(os.path.join(basedir, libname + '.so')):
+            libname += '.so'
+        else:
+            libname += '.linux' + bitness + '.so'
 
 lib = CDLL(os.path.join(basedir, libname))
 

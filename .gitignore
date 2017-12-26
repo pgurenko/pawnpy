@@ -3,6 +3,8 @@ build*
 *.DS_Store
 .vscode
 *.so
+*.dylib
+*.dll
 *.pyc
 *.amx
 venv/
