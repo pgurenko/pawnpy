@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 import subprocess
 from ctypes import (CDLL, POINTER, c_int, c_long,
                     create_string_buffer, c_char_p, c_void_p, byref,
@@ -24,8 +25,14 @@ def cc(input, output=None, includes=None):
         arr[i] = arg.encode('utf-8')
     subprocess.check_call(argv)
 
+if platform.system() == 'Linux':
+    libname = 'libpawnpy.so'
+elif platform.system() == 'Darwin':
+    libname = 'libpawnpy.dylib'
+elif platform.system() == 'Windows':
+    libname = 'pawnpy.dll'
 
-lib = CDLL(os.path.join(basedir, 'libpawnpy.so'))
+lib = CDLL(os.path.join(basedir, libname))
 
 # /* reserve the first 15 error codes for exit codes of the abstract machine */
 AMX_ERR_NONE = 0
