@@ -17,7 +17,7 @@ jobs:
       before_deploy:
       - git config --local user.name "travis-ci"
       - git config --local user.email "travis@ci"
-      - if [[ $(git tag) != $(git describe) ]]; then git tag "$(git describe)"; fi
+      - git tag -af "$(git describe)" -m "travis-ci"
       deploy:
         provider: releases
         api_key:
