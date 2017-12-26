@@ -1,5 +1,5 @@
 import sys
-from distutils.core import setup, find_packages
+from distutils.core import setup
 
 libname = 'pawnpy'
 
@@ -27,6 +27,6 @@ setup(
     download_url='https://github.com/pgurenko/pawnpy/archive/1.0.tar.gz',
     keywords=['pawn', 'wrapper', 'testing'],
     classifiers=[],
-    packages=find_packages(),
+    packages=['pawnpy'],
     package_data={'pawnpy': [libname]}
 )
