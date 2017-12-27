@@ -1,6 +1,8 @@
 import sys
 from distutils.core import setup
 
+version = '1.0.1'
+
 libname = 'pawnpy'
 
 if sys.maxsize > 2**32:
@@ -19,12 +21,12 @@ else:
 
 setup(
     name='pawnpy',
-    version='1.0',
+    version=version,
     description='Pawn wrapper for Python',
     author='Pavel Gurenko & Dmitry Efremov',
     author_email='pgurenko@gmail.com',
     url='https://github.com/pgurenko/pawnpy',
-    download_url='https://github.com/pgurenko/pawnpy/archive/1.0.tar.gz',
+    download_url='https://github.com/pgurenko/pawnpy/releases/download/%s/pawnpy-%s.tar.gz' % (version, version),
     keywords=['pawn', 'wrapper', 'testing'],
     classifiers=[],
     packages=['pawnpy'],
