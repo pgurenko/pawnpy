@@ -4,8 +4,8 @@ os:
 
 stages:
   - build
+  - package
   - test
-  - deploy
 
 jobs:
   include:
@@ -31,17 +31,11 @@ jobs:
           repo: pgurenko/pawnpy
           all_branches: true
 
-    - stage: test
+    - stage: package
       script:
       - ./get_artifact.sh libpawnpy.linux.x64.so
       - ./get_artifact.sh pawncc.linux.x64
       - chmod +x ./pawnpy/pawncc.linux.x64
-      - python3 -m unittest discover ./tests
-
-    - stage: deploy
-      script:
-      - ./get_artifact.sh libpawnpy.linux.x64.so
-      - ./get_artifact.sh pawncc.linux.x64
       - ./package.sh
       deploy:
         provider: releases
@@ -53,3 +47,10 @@ jobs:
         on:
           repo: pgurenko/pawnpy
           all_branches: true
+
+    - stage: test
+      script:
+      - virtualenv venv --python=python3
+      - . venv/bin/activate
+      - pip install https://github.com/pgurenko/pawnpy/releases/download/$(git describe)/pawnpy-$(git describe).tar.gz
+      - python3 -m unittest discover ./tests
