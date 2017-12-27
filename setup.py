@@ -19,6 +19,16 @@ else:
     else:
         libname += '.linux' + bitness + '.so'
 
+ccname = 'pawncc'
+
+if sys.platform == 'win32':
+    ccname +=  bitness + '.exe'
+else:
+    if sys.platform == 'darwin':
+        ccname += '.darwin' + bitness
+    else:
+        ccname += '.linux' + bitness
+
 setup(
     name='pawnpy',
     version=version,
@@ -30,5 +40,5 @@ setup(
     keywords=['pawn', 'wrapper', 'testing'],
     classifiers=[],
     packages=['pawnpy'],
-    package_data={'pawnpy': [libname]}
+    package_data={'pawnpy': [libname, ccname]}
 )
