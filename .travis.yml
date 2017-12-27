@@ -35,6 +35,7 @@ jobs:
       script:
       - ./get_artifact.sh libpawnpy.linux.x64.so
       - ./get_artifact.sh pawncc.linux.x64
+      - chmod +x ./pawnpy/pawncc.linux.x64
       - python3 -m unittest discover ./tests
 
     - stage: deploy

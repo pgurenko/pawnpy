@@ -8,10 +8,25 @@ c_cell = c_int
 
 basedir = os.path.dirname(os.path.realpath(__file__))
 
+if sys.maxsize > 2**32:
+    bitness = '.x64'
+else:
+    bitness = '.x86'
+
+ccname = 'pawncc'
+
+if sys.platform == 'win32':
+    ccname +=  bitness + '.exe'
+else:
+    if not os.path.exists(os.path.join(basedir, ccname)):
+        if sys.platform == 'darwin':
+            ccname += '.darwin' + bitness
+        else:
+            ccname += '.linux' + bitness
 
 def cc(input, output=None, includes=None):
     argv = []
-    argv.append(os.path.join(basedir, 'pawncc'))
+    argv.append(os.path.join(basedir, ccname))
     argv.append(input)
     argv.append('-v2')
     if output:
@@ -25,11 +40,6 @@ def cc(input, output=None, includes=None):
     subprocess.check_call(argv)
 
 libname = 'pawnpy'
-
-if sys.maxsize > 2**32:
-    bitness = '.x64'
-else:
-    bitness = '.x86'
 
 if sys.platform == 'win32':
     libname +=  bitness + '.dll'
