@@ -50,7 +50,8 @@ jobs:
 
     - stage: test
       script:
+      - cd ./tests
       - virtualenv venv --python=python3
       - . venv/bin/activate
       - pip install https://github.com/pgurenko/pawnpy/releases/download/$(git describe)/pawnpy-$(git describe).tar.gz
-      - python3 -m unittest discover ./tests
+      - python3 -m unittest discover .
